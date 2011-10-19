@@ -1,0 +1,18 @@
+body { padding: 0; margin: 0; background: none #edeee9; font-family: Helvetica, sans-serif; }
+
+#chart-container { margin: 0; padding: 0; float: left; width: auto; }
+#chart-bar { margin: 0; padding: 0; position: relative; top: -40px; left: 0; }
+
+#ctlbar { float: left; width: 130px; background-color: #dddcd8; padding: 12px; margin: 0; } 
+.presidenttitle { display: inline-block; font-weight: bold; color: #5e5e5e; font-size: 10pt; }
+.termyears { font-style: italic; color: #939290; font-size: 9pt; }
+.yearlist { color: #5e5e5e; font-weight: normal; font-size: 11pt; letter-spacing: -1pt; }
+
+div.collapsable { width: auto; margin: 7px 0 18px 0; padding: 0; }
+div.collapsable div.list-bullet { display: inline-block; vertical-align: top; padding: 0; margin: 0; width: 12px; height: 12px; background: url(icons_arrows.png) no-repeat; }
+div.collapsable div.list-bullet-open { display: inline-block; background-position: 0 -11px; }
+div.collapsable div.list-bullet-closed { display: inline-block; background-position 0 0; }
+div.collapsable ul { margin: 0; padding: 0 0 0 1em; }
+div.collapsable li { list-style-type: none; list-style-image: none; }
+
+.clear { clear: both; } 

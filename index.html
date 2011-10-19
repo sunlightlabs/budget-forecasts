@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title>Budget Forecasts vs Budget Realities</title>
+        <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js"></script>
+        <script type="text/javascript" src="js/date.js"></script>
+        <script type="text/javascript" src="js/highstock.src.js"></script>
+        <!-- script type="text/javascript" src="https://raw.github.com/highslide-software/highcharts.com/stock2/js/highstock.src.js"></script -->
+        <script type="text/javascript" src="data.js"></script>
+        <script type="text/javascript">
+        $(function(){
+            // JAVASCRIPT 1.6 COMPATIBILITY PATCH FROM MDN
+            if (!Array.prototype.filter) {  
+                Array.prototype.filter = function(fun /*, thisp */)  
+                {  
+                    "use strict";  
+
+                    if (this === void 0 || this === null)  
+                        throw new TypeError();  
+
+                        var t = Object(this);  
+                        var len = t.length >>> 0;  
+                        if (typeof fun !== "function")  
+                            throw new TypeError();  
+
+                        var res = [];  
+                        var thisp = arguments[1];  
+                        for (var i = 0; i < len; i++)  
+                        {  
+                            if (i in t)  
+                            {  
+                                var val = t[i]; // in case fun mutates this  
+                                if (fun.call(thisp, val, i, t))  
+                                    res.push(val);  
+                            }  
+                        }  
+
+                    return res;  
+                };  
+            }
+
+
+            // CHART CODE
+            function formatEstimateLabel () {
+                if (this.series.name == 'Event Flags') {
+                    var event_date = new Date(this.x);
+                    return '<b>' + this.point.text + '</b></span><br>' + event_date.toString('MMM dd, yyyy');
+                } else {
+                    var parts = this.series.name.split(' '),
+                        budget_year = parts[1],
+                        president = parts[0],
+                        estimate_date = new Date(this.x),
+                        estimate_year = estimate_date.getFullYear();
+                    var lines = [
+                        '<b>' + budget_year + ' Budget</b> (' + president + ')',
+                        estimate_year + ' Estimate: $' + this.y + '(' + '???' + ')'
+                    ];
+
+                    return lines.join('<br>');
+                }
+            };
+
+            var seriesOptions = [],
+                yAxisOptions = [],
+                colors = [],
+                seriesCounter = 1;
+
+            seriesOptions[0] = {
+                name: 'Actual Balances',
+                data: balances,
+                yAxis: 0,
+                dashStyle: 'solid'
+            };
+            colors[0] = '#e76625';
+
+            for (var president in budgets) {
+                for (var year in budgets[president]) {
+                    var budget = budgets[president][year];
+                    seriesOptions[seriesCounter] = {
+                        name: president + ' ' + year,
+                        visible: false,
+                        data: budget,
+                        yAxis: 1
+                    };
+                    colors[seriesCounter] = '#e7cb2a';
+
+                    seriesCounter += 1;
+                }
+            }
+
+            seriesOptions[seriesCounter] = {
+                type: 'scatter',
+                marker: {
+                    enabled: true,
+                    symbol: 'url(icons_events_white.png)',
+                    animated: false,
+                    width: 15,
+                    height: 20
+                },
+                y: -10,
+                shadow: false,
+                id: 'event-flags',
+                name: 'Event Flags',
+                data: [{ x: Date.UTC(2005, 07, 29),
+                         y: -1870,
+                         title: ' ',
+                         text: 'Hurricane Katrina',
+                       }]
+            };
+            seriesCounter += 1;
+
+            var width = $("body").innerWidth() - 154;
+            Chart = new Highcharts.StockChart({
+                        chart: {
+                            animated: false,
+                            backgroundColor: 'none',
+                            plotBackgroundImage: '/budgets/bg_vis4.png',
+                            renderTo: 'chart-container',
+                            width: width,
+                            alignTicks: false
+                        },
+                        credits: {
+                            enabled: false
+                        },
+                        scrollbar: {
+                            enabled: false
+                        },
+                        navigator: {
+                            enabled: false
+                        },
+                        rangeSelector: {
+                            enabled: false
+                        },
+                        xAxis: {
+                            type: 'datetime',
+                            tickLength: 10,
+                            labels: {
+                                style: { 
+                                    color: '#939290',
+                                    fontWeight: 'bolder',
+                                    fontStyle: 'italic',
+                                    letterSpacing: '109%'
+                                },
+                                y: 26
+                            },
+                            min: Date.UTC(1994, 0, 1),
+                            max: Date.UTC(2020, 0, 1)
+                        },
+                        plotOptions: {
+                            series: {
+                                dashStyle: 'shortdash',
+                                dataLabels: {
+                                    color: '#80807e'
+                                }
+                            }
+                        },
+                        tooltip: {
+                            formatter: formatEstimateLabel,
+                            shared: false,
+                            borderRadius: 0,
+                            borderWidth: 2,
+                            borderColor: '#ddded9',
+                            backgroundColor: '#f7f7f5',
+                            style: {
+                                color: '#80807e'
+                            }
+                        },
+                        yAxis: [ { alternateGridColor: null,
+                                   gridLineWidth: 0,
+                                   lineWidth: 0,
+                                   max: 1000,
+                                   min: -2000,
+                                   tickPixelInterval: 57,
+                                   opposite: true,
+                                   showFirstLabel: false,
+                                   labels: { enabled: false }
+                                 },
+                                 { alternateGridColor: null,
+                                   gridLineWidth: 0,
+                                   lineWidth: 0,
+                                   max: 1000,
+                                   min: -2000,
+                                   tickPixelInterval: 57,
+                                   opposite: false,
+                                   showFirstLabel: false,
+                                   labels: { 
+                                       formatter: function(){ return '$' + this.value; },
+                                       style: { 
+                                           color: '#939290',
+                                           fontWeight: 'bolder',
+                                           fontStyle: 'italic',
+                                           letterSpacing: '109%'
+                                       },
+                                       x: -10,
+                                       align: 'right'
+                                   }
+                                 }
+                        ],
+                        series: seriesOptions,
+                        colors: colors,
+                        labels: []
+                    });
+
+            $(document).ready(function(){
+                if (window != top) {
+                    if ($(window).attr("id")) {
+                        $("#" + $(window).attr("id"), top).width(800);
+                    }
+                }
+                $("input.series-toggle").click(function(event){
+                    var series_name = $(event.currentTarget).attr("name")
+                                                            .toLowerCase()
+                                                            .replace('-', ' '),
+                        matcher = function(s){ return s.name.toLowerCase() == series_name; },
+                        series = Chart.series.filter(matcher);
+                    if (series.length == 0) {
+                        if (console != null) {
+                            throw ("Series not found: " + series_name);
+                        }
+                    } else if ($(event.currentTarget).attr("checked") == "checked") {
+                        series[0].show();
+                        Chart.redraw();
+                    } else {
+                        series[0].hide();
+                        Chart.redraw();
+                    }
+                });
+
+                $(".list-bullet").click(function(event){
+                    $(event.currentTarget).toggleClass("list-bullet-open");
+                    $(event.currentTarget).toggleClass("list-bullet-closed");
+                    if ($(event.currentTarget).hasClass("list-bullet-closed")) {
+                        $("ul", event.currentTarget.parentNode).hide();
+                    } else {
+                        $("ul", event.currentTarget.parentNode).show();
+                    }
+                });
+            });
+
+        });
+        function iframe_resize () {
+            try {
+                if (window != top) {
+                    parent.resizeBudgetForecast(document.body.scrollHeight);
+                }
+            } catch (e) {
+                /* no-op */
+            }
+        }
+        </script>
+        <link rel="stylesheet" type="text/css" href="screen.css" media="screen">
+    </head>
+    <body onload="iframe_resize();">
+        <div id="ctlbar">
+
+            <div class="collapsable">
+                <div class="list-bullet list-bullet-open"></div>
+                <div class="presidenttitle">
+                    <span>Budgets under <br> Bill Clinton</span>
+                    <br>
+                    <span class="termyears">(1995 - 2001)</span>
+                </div>
+                <ul id="clinton-budgets" class="yearlist">
+                    <li><input type="checkbox" name="Clinton-1996" id="Clinton-1996" class="series-toggle">1996</li>
+                    <li><input type="checkbox" name="Clinton-1997" id="Clinton-1997" class="series-toggle">1997</li>
+                    <li><input type="checkbox" name="Clinton-1998" id="Clinton-1998" class="series-toggle">1998</li>
+                    <li><input type="checkbox" name="Clinton-1999" id="Clinton-1999" class="series-toggle">1999</li>
+                    <li><input type="checkbox" name="Clinton-2000" id="Clinton-2000" class="series-toggle">2000</li>
+                    <li><input type="checkbox" name="Clinton-2001" id="Clinton-2001" class="series-toggle">2001</li>
+                </ul>
+            </div>
+
+            <div class="collapsable">
+                <div class="list-bullet list-bullet-open"></div>
+                <div class="presidenttitle">
+                    <span>Budgets under <br> George W. Bush</span>
+                    <br>
+                    <span class="termyears">(2001 - 2009)</span>
+                </div>
+                <ul id="bush-budgets" class="yearlist">
+                    <li><input type="checkbox" name="Bush-2002" id="Bush-2002" class="series-toggle">2002</li>
+                    <li><input type="checkbox" name="Bush-2003" id="Bush-2003" class="series-toggle">2003</li>
+                    <li><input type="checkbox" name="Bush-2004" id="Bush-2004" class="series-toggle">2004</li>
+                    <li><input type="checkbox" name="Bush-2005" id="Bush-2005" class="series-toggle">2005</li>
+                    <li><input type="checkbox" name="Bush-2006" id="Bush-2006" class="series-toggle">2006</li>
+                    <li><input type="checkbox" name="Bush-2007" id="Bush-2007" class="series-toggle">2007</li>
+                    <li><input type="checkbox" name="Bush-2008" id="Bush-2008" class="series-toggle">2008</li>
+                    <li><input type="checkbox" name="Bush-2009" id="Bush-2009" class="series-toggle">2009</li>
+                </ul>
+            </div>
+        
+            <div class="collapsable">
+                <div class="list-bullet list-bullet-open"></div>
+                <div class="presidenttitle">
+                    <span>Budgets under <br> Barack Obama</span>
+                    <br>
+                    <span class="termyears">(2009 - 2011)</span>
+                </div>
+                <ul id="obama-budgets" class="yearlist">
+                    <li><input type="checkbox" name="Obama-2010" id="Obama-2010" class="series-toggle">2010</li>
+                    <li><input type="checkbox" name="Obama-2011" id="Obama-2011" class="series-toggle">2011</li>
+                    <li><input type="checkbox" name="Obama-2012" id="Obama-2012" class="series-toggle">2012</li>
+                </ul>
+            </div>
+        </div>
+        <div id="chart-container">
+        </div>
+        <div class="clear"></div>
+    </body>
+</html>
+
